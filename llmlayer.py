@@ -129,14 +129,16 @@ class LlamaCPPInvocationLayer(PromptModelInvocationLayer):
             }
 
         if stream:
-            for token in self.model(prompt, stream=True, **model_input_kwargs):
-                generated_texts.append(token['choices'][0]['text'])
+            generated_texts.extend(
+                token['choices'][0]['text']
+                for token in self.model(prompt, stream=True, **model_input_kwargs)
+            )
         else:
             output = self.model(prompt, **model_input_kwargs)
             generated_texts = [o['text'] for o in output['choices']]
         return generated_texts
 
-    def supports(cls, model_name_or_path: str, **kwargs) -> bool:
+    def supports(self, model_name_or_path: str, **kwargs) -> bool:
         """
         Checks if the given model is supported by this invocation layer.
 
@@ -146,4 +148,4 @@ class LlamaCPPInvocationLayer(PromptModelInvocationLayer):
         :return: True if this invocation layer supports the model, False otherwise.
         """
         # I guess there is not much to validate here ¯\_(ツ)_/¯
-        return model_name_or_path is not None and len(model_name_or_path) > 0
+        return model_name_or_path is not None and model_name_or_path != ""
